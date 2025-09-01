@@ -5,28 +5,32 @@ import com.example.identity.dto.request.UserUpdateRequest;
 import com.example.identity.entity.User;
 import com.example.identity.exception.AppException;
 import com.example.identity.exception.ErrorCode;
+import com.example.identity.mapper.UserMapper;
 import com.example.identity.repository.UserRepository;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserService {
-    @Autowired
-    private UserRepository userRopository;
+     UserRepository userRopository;
+     UserMapper userMapper;
 
     public User createUser(UserCreationRequest request){
-        User user = new User();
 
         if(userRopository.existsByUsername(request.getUsername()))
             throw new AppException(ErrorCode.USER_EXISTED);
-
-        user.setUsername(request.getUsername());
-        user.setPassword(request.getPassword());
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setDob(request.getDob());
+        User user = userMapper.toUser(request);
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         return userRopository.save(user);
     }
@@ -41,10 +45,13 @@ public class UserService {
 
     public User updateUser(String id, UserUpdateRequest request){
         User user = getUser(id);
-        user.setPassword(request.getPassword());
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setDob(request.getDob());
+        userMapper.updateUser(user,request);
+
+        return userRopository.save(user);
+    }
+    public User updatePartialUser(String id, UserUpdateRequest request){
+        User user = getUser(id);
+        userMapper.updatePartialUser(request, user);
 
         return userRopository.save(user);
     }

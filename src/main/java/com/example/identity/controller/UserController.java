@@ -6,6 +6,7 @@ import com.example.identity.dto.request.UserUpdateRequest;
 import com.example.identity.entity.User;
 import com.example.identity.service.UserService;
 import jakarta.validation.Valid;
+import lombok.Builder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,6 +38,11 @@ public class UserController {
     @PutMapping("/{userId}")
     User updateUser(@PathVariable String userId, @RequestBody UserUpdateRequest request){
         return userService.updateUser(userId, request);
+    }
+
+    @PatchMapping("/{userId}")
+    User updatePartialUser(@PathVariable String userId, @RequestBody UserUpdateRequest request){
+        return userService.updatePartialUser(userId, request);
     }
 
     @DeleteMapping("/{userId}")
